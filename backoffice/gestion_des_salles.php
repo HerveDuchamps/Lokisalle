@@ -1,37 +1,33 @@
 <?php
 require_once('../inc/init.inc.php');
 
-//Si user n'est pas admin : redirection
-//if(!utilisateurAdmin()){
-//	header('location:../connexion.php');
-//}
 
-// TRAITEMENT POUR SUPPRIMER UN PRODUIT : 
+// TRAITEMENT POUR SUPPRIMER UN SALLE : 
 // Dans un premier temps il faut supprimer la (les) photo(s) de ce produit de notre serveur.
 if(isset($_GET['action']) && $_GET['action'] == 'suppression'){ // Si une action de suppression est passée dans l'URL, on va vérifier qu'il y a bien un ID et que cet ID est bien un INTEGER
 	if(isset($_GET['id']) && is_numeric($_GET['id'])){ // OK il y a bien un ID qui est un INTEGER
 	// Puisqu'il faut supprimer la ou les photo(s) du produit, je dois récupérer toutes les infos du produit.
-		$resultat = $pdo -> prepare("SELECT * FROM produit WHERE id_produit = :id");
+		$resultat = $pdo -> prepare("SELECT * FROM salle WHERE id_salle = :id");
 		$resultat -> bindParam(':id', $_GET['id'], PDO::PARAM_INT);
 		$resultat -> execute();
 		
-		if($resultat -> rowCount() > 0){ // Cela signifie qu'il existe bien un produit avec cet ID. ON vérifie car l'utilisateur peut avoir modifier l'ID dans l'URL...
-			$produit = $resultat -> fetch(PDO::FETCH_ASSOC);
+		if($resultat -> rowCount() > 0){ // Cela signifie qu'il existe bien une salle avec cet ID. ON vérifie car l'utilisateur peut avoir modifier l'ID dans l'URL...
+			$salle = $resultat -> fetch(PDO::FETCH_ASSOC);
 
 			// Pour pouvoir supprimer la photo, il nous faut son emplacement (chemin) exact. 
-			$chemin_photo_a_supprimer = RACINE_SERVEUR . RACINE_SITE . 'photo/' . utf8_decode($produit['photo']);
+			$chemin_photo_a_supprimer = RACINE_SERVEUR . RACINE_SITE . 'photo/' . utf8_decode($salle['photo']);
 			
-			// dernière vérification : le fichier existe-t-il, et ce n'est pas la photo par défaut partagée par d'autres produits
-			if(file_exists($chemin_photo_a_supprimer) && $produit['photo'] != 'default.jpg'){
+			// dernière vérification : le fichier existe-t-il, et ce n'est pas la photo par défaut partagée par d'autres salle
+			if(file_exists($chemin_photo_a_supprimer) && $salle['photo'] != 'default.jpg'){
 				unlink($chemin_photo_a_supprimer); // Supprime le fichier du serveur.
 			}
 			
-			// Maintenant que la photo est supprimée, on va supprimer le produit de la BDD : 
-			$resultat = $pdo -> exec("DELETE FROM produit WHERE id_produit = $produit[id_produit]"); 
+			// Maintenant que la photo est supprimée, on va supprimer la salle de la BDD : 
+			$resultat = $pdo -> exec("DELETE FROM salle WHERE id_salle = $salle[id_salle]"); 
 			
 			if($resultat != FALSE){ // Si la requête est un succès
 				$_GET['action'] = 'affichage';
-				$msg .= '<div class="validation">Le produit N°' . $produit['id_produit'] . ' a bien été supprimé !</div>';
+				$msg .= '<div class="validation">La salle N°' . $produit['id_salle'] . ' a bien été supprimé !</div>';
 			}
 		}
 		// Ici dans le else, on pourrait faire une redirection vers 404.php
@@ -42,7 +38,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'suppression'){ // Si une action
 
 
 
-// TRAITEMENT POUR ENREGISTRER/MODIFIER UN PRODUIT : 
+// TRAITEMENT POUR ENREGISTRER/MODIFIER UNE SALLE : 
 if($_POST){
 	
 	debug($_POST);
@@ -70,7 +66,7 @@ if($_POST){
 					$nom_photo = $_POST['reference'] . '_' . $_FILES['photo']['name'];
 					$nom_photo = utf8_decode($nom_photo);
 					// enregistrer la photo dans le dossier photo/
-					$chemin_photo = RACINE_SERVEUR . RACINE_SITE . 'photo/' . $nom_photo;
+					$chemin_photo = RACINE_SERVEUR . RACINE_SITE . 'img/' . $nom_photo;
 					
 					copy($_FILES['photo']['tmp_name'], $chemin_photo); // La fonction copy() permet de copier/coller un fichier d'un emplacement à un autre. Elle attend 2 args : 1/ L'emplacement du fichier à copier et 2/ l'emplacement définitif de la copie. 
 					
@@ -93,37 +89,34 @@ if($_POST){
 	//Enregistrement dans la BDD
 	
 	if(isset($_GET['action']) && $_GET['action'] == 'modification'){
-		$resultat = $pdo -> prepare("REPLACE INTO produit (id_produit, reference, categorie, titre, description, couleur, taille, public, photo, prix, stock) VALUES (:id_produit, :reference, :categorie, :titre, :description, :couleur, :taille, :public, :photo, :prix, :stock)");
 		
-		//$resultat = $pdo -> prepare("UPDATE produit set reference = :reference, categorie = :categorie, titre = :titre, description = :description, couleur = :couleur, taille = :taille, public = :public, photo = :photo, prix = :prix, stock = :stock WHERE id_produit = :id_produit ");
 		
-		$resultat -> bindParam(':id_produit', $_POST['id_produit'], PDO::PARAM_INT);
+		$resultat = $pdo -> prepare("UPDATE salle set titre = :titre, description = :description, photo = :photo, pays = :pays, ville = :ville, adresse = :adresse, cp = :cp, capacite = :capacite, categorie = :categorie,  WHERE id_salle = :id_salle ");
+		
+		$resultat -> bindParam(':id_salle', $_POST['id_salle'], PDO::PARAM_INT);
 	}
 	else{
-		$resultat = $pdo -> prepare("INSERT INTO produit (reference, categorie, titre, description, couleur, taille, public, photo, prix, stock) VALUES (:reference, :categorie, :titre, :description, :couleur, :taille, :public, :photo, :prix, :stock)");
+		$resultat = $pdo -> prepare("INSERT INTO salle (titre, description,photo, pays, ville, adresse, cp, capacite, categorie) VALUES (:titre, :description, :photo, :pays, :ville, :adresse, :cp, :capacite, :categorie)");
 	}
 	
 	//STR
-	$resultat -> bindParam(':reference', $_POST['reference'], PDO::PARAM_STR);
-	$resultat -> bindParam(':categorie', $_POST['categorie'], PDO::PARAM_STR);
 	$resultat -> bindParam(':titre', $_POST['titre'], PDO::PARAM_STR);
-	$resultat -> bindParam(':description', $_POST['description'], PDO::PARAM_STR);
-	$resultat -> bindParam(':couleur', $_POST['couleur'], PDO::PARAM_STR);
-	$resultat -> bindParam(':taille', $_POST['taille'], PDO::PARAM_STR);
-	$resultat -> bindParam(':public', $_POST['public'], PDO::PARAM_STR);
-	$nom_photo =  utf8_encode($nom_photo);
+	$resultat -> bindParam(':description', $_POST['description'], PDO::PARAM_STR);	
 	$resultat -> bindParam(':photo', $nom_photo , PDO::PARAM_STR);
-	// Si le prix est en float dans la BDD :
-	//$resultat -> bindParam(':prix', $_POST['prix'], PDO::PARAM_STR)
+	$resultat -> bindParam(':pays', $_POST['pays'], PDO::PARAM_STR);
+	$resultat -> bindParam(':ville', $_POST['ville'], PDO::PARAM_STR);
+	$resultat -> bindParam(':adresse', $_POST['adresse'], PDO::PARAM_STR);
+	$resultat -> bindParam(':categorie', $_POST['categorie'], PDO::PARAM_STR);
+	
+	$nom_photo =  utf8_encode($nom_photo);
 	
 	//INT
-	$resultat -> bindParam(':prix', $_POST['prix'], PDO::PARAM_INT);
-	$resultat -> bindParam(':stock', $_POST['stock'], PDO::PARAM_INT);
-	
+	$resultat -> bindParam(':cp', $_POST['cp'], PDO::PARAM_INT);
+		
 	if($resultat -> execute()){
 		$_GET['action'] = 'affichage';
 		$last_id = $pdo-> lastInsertId();
-		$msg .= '<div class="validation">Le produit N°' . $last_id . ' a été enregistré avec succès !</div>';
+		$msg .= '<div class="validation">La salle N°' . $last_id . ' a été enregistré avec succès !</div>';
 	}
 	
 	// Pourquoi effectuer "-> execute()" dans le if ?
@@ -132,9 +125,9 @@ if($_POST){
 }
 
 
-// Traitement pour afficher tous les produits : 
+// Traitement pour afficher tous les salles : 
 if(isset($_GET['action']) && $_GET['action'] == 'affichage'){ // Si une action existe dans l'url et que cette action est 'affichage', alors je fais les traitements pour afficher les produits. 
-	// REQUETE pour récupérer tous les infos de tous les produits :
+	// REQUETE pour récupérer tous les infos de tous les salles :
 	$resultat = $pdo -> query("SELECT * FROM salle");
 	
 	$contenu .= '<table border="1">';
@@ -146,9 +139,9 @@ if(isset($_GET['action']) && $_GET['action'] == 'affichage'){ // Si une action e
 	$contenu .= '<th colspan="2">Actions</th>';
 	$contenu .= '</tr>';
 
-	while($produits = $resultat -> fetch(PDO::FETCH_ASSOC)){
+	while($sales = $resultat -> fetch(PDO::FETCH_ASSOC)){
 		$contenu .= '<tr>'; 
-		foreach($produits as $indice => $valeur){
+		foreach($salles as $indice => $valeur){
 			if($indice == 'photo'){
 				$contenu .= '<td><img src="' . RACINE_SITE . 'photo/' . $valeur . '" height="80"/></td>';
 			}
@@ -156,8 +149,8 @@ if(isset($_GET['action']) && $_GET['action'] == 'affichage'){ // Si une action e
 				$contenu .= '<td>' . $valeur . '</td>';
 			}	
 		}
-		$contenu .= '<td><a href="?action=modification&id=' . $produits['id_produit'] . '"><img src="' . RACINE_SITE . 'img/edit.png"/></a></td>';
-		$contenu .= '<td><a href="?action=suppression&id=' . $produits['id_produit'] . '"><img src="' . RACINE_SITE . 'img/delete.png"/></a></td>';
+		$contenu .= '<td><a href="?action=modification&id=' . $salles['id_salle'] . '"><img src="' . RACINE_SITE . 'img/edit.png"/></a></td>';
+		$contenu .= '<td><a href="?action=suppression&id=' . $salles['id_salle'] . '"><img src="' . RACINE_SITE . 'img/delete.png"/></a></td>';
 		
 		$contenu .= '</tr>'; 
 	}
@@ -180,28 +173,27 @@ require_once('../inc/header.inc.php');
 
 <?php
 if(isset($_GET['id']) && is_numeric($_GET['id'])){ // Si j'ai un ID dans l'URL, et que cet ID est bien une valeur numérique, je récupère les infos du produit correspondant dans la BDD :
-	$resultat = $pdo -> prepare("SELECT * FROM produit WHERE id_produit = :id");
+	$resultat = $pdo -> prepare("SELECT * FROM salle WHERE id_salle = :id");
 	$resultat -> bindParam(':id', $_GET['id'], PDO::PARAM_INT);
 	$resultat -> execute();
 	
 	if($resultat -> rowCount() > 0){
-		$produit_actuel = $resultat -> fetch(PDO::FETCH_ASSOC);
+		$salle_actuel = $resultat -> fetch(PDO::FETCH_ASSOC);
 	}
 }// fin du if !!!! 
 
-$reference = (isset($produit_actuel)) ? $produit_actuel['reference'] : '';
-$categorie = (isset($produit_actuel)) ? $produit_actuel['categorie'] : '';
-$titre = (isset($produit_actuel)) ? $produit_actuel['titre'] : '';
-$description = (isset($produit_actuel)) ? $produit_actuel['description'] : '';
-$couleur = (isset($produit_actuel)) ? $produit_actuel['couleur'] : '';
-$taille = (isset($produit_actuel)) ? $produit_actuel['taille'] : '';
-$public = (isset($produit_actuel)) ? $produit_actuel['public'] : '';
-$photo = (isset($produit_actuel)) ? $produit_actuel['photo'] : '';
-$prix = (isset($produit_actuel)) ? $produit_actuel['prix'] : '';
-$stock = (isset($produit_actuel)) ? $produit_actuel['stock'] : '';
+$titre = (isset($salle_actuel)) ? $salle_actuel['titr'] : '';
+$description = (isset($salle_actuel)) ? $salle_actuel['description'] : '';
+$photo = (isset($salle_actuel)) ? $salle_actuel['photo'] : '';
+$pays = (isset($salle_actuel)) ? $salle_actuel['pays'] : '';
+$ville = (isset($salle_actuel)) ? $salle_actuel['ville'] : '';
+$adresse = (isset($salle_actuel)) ? $salle_actuel['adresse'] : '';
+$cp = (isset($salle_actuel)) ? $salle_actuel['cp'] : '';
+$capacite = (isset($salle_actuel)) ? $salle_actuel['capacite'] : '';
+$categorie = (isset($salle_actuel)) ? $salle_actuel['categorie'] : '';
 
-$id_produit = (isset($produit_actuel)) ? $produit_actuel['id_produit'] : '';
-$action = (isset($produit_actuel)) ? 'Modifier' : 'Ajouter';
+$id_salle = (isset($salle_actuel)) ? $salle_actuel['id_salle'] : '';
+$action = (isset($salle_actuel)) ? 'Modifier' : 'Ajouter';
 
 
 ?>
