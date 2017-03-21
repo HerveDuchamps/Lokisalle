@@ -15,7 +15,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'suppression'){ // Si une action
 			$salle = $resultat -> fetch(PDO::FETCH_ASSOC);
 
 			// Pour pouvoir supprimer la photo, il nous faut son emplacement (chemin) exact. 
-			$chemin_photo_a_supprimer = RACINE_SERVEUR . RACINE_SITE . 'photo/' . utf8_decode($salle['photo']);
+			$chemin_photo_a_supprimer = RACINE_SERVEUR . RACINE_SITE . 'img/' . utf8_decode($salle['photo']);
 			
 			// dernière vérification : le fichier existe-t-il, et ce n'est pas la photo par défaut partagée par d'autres salle
 			if(file_exists($chemin_photo_a_supprimer) && $salle['photo'] != 'default.jpg'){
@@ -27,7 +27,7 @@ if(isset($_GET['action']) && $_GET['action'] == 'suppression'){ // Si une action
 			
 			if($resultat != FALSE){ // Si la requête est un succès
 				$_GET['action'] = 'affichage';
-				$msg .= '<div class="validation">La salle N°' . $produit['id_salle'] . ' a bien été supprimé !</div>';
+				$msg .= '<div class="validation">La salle N°' . $salle['id_salle'] . ' a bien été supprimé !</div>';
 			}
 		}
 		// Ici dans le else, on pourrait faire une redirection vers 404.php
@@ -54,7 +54,6 @@ if($_POST){
 	if(isset($_POST['photo_actuelle'])){
 		$nom_photo = $_POST['photo_actuelle'];
 	}	
-	
 	if(!empty($_FILES['photo']['name'])){ // Si l'utilisateur nous a transmis une photo
 		if($_FILES['photo']['error'] == 0){	
 			$ext = explode('/', $_FILES['photo']['type']);
@@ -63,11 +62,10 @@ if($_POST){
 				if($_FILES['photo']['size'] < 1000000){
 			
 					// On renomme la photo pour éviter les doublons dans le dossier photo/
-					$nom_photo = $_POST['reference'] . '_' . $_FILES['photo']['name'];
+					$nom_photo = $_POST['salle'] . '_' . $_FILES['photo']['name'];
 					$nom_photo = utf8_decode($nom_photo);
 					// enregistrer la photo dans le dossier photo/
 					$chemin_photo = RACINE_SERVEUR . RACINE_SITE . 'img/' . $nom_photo;
-					
 					copy($_FILES['photo']['tmp_name'], $chemin_photo); // La fonction copy() permet de copier/coller un fichier d'un emplacement à un autre. Elle attend 2 args : 1/ L'emplacement du fichier à copier et 2/ l'emplacement définitif de la copie. 
 					
 				}
@@ -91,11 +89,28 @@ if($_POST){
 	if(isset($_GET['action']) && $_GET['action'] == 'modification'){
 		
 		
-		$resultat = $pdo -> prepare("UPDATE salle set titre = :titre, description = :description, photo = :photo, pays = :pays, ville = :ville, adresse = :adresse, cp = :cp, capacite = :capacite, categorie = :categorie,  WHERE id_salle = :id_salle ");
+		$resultat = $pdo -> prepare("UPDATE salle SET titre = :titre, description = :description, photo = :photo, pays = :pays, ville = :ville, adresse = :adresse, cp = :cp, capacite = :capacite, categorie = :categorie  WHERE id_salle = :id_salle ");
 		
 		$resultat -> bindParam(':id_salle', $_POST['id_salle'], PDO::PARAM_INT);
+		
+	//STR
+	$resultat -> bindParam(':titre', $_POST['titre'], PDO::PARAM_STR);
+	$resultat -> bindParam(':description', $_POST['description'], PDO::PARAM_STR);	
+	$resultat -> bindParam(':photo', $nom_photo , PDO::PARAM_STR);
+	$resultat -> bindParam(':pays', $_POST['pays'], PDO::PARAM_STR);
+	$resultat -> bindParam(':ville', $_POST['ville'], PDO::PARAM_STR);
+	$resultat -> bindParam(':adresse', $_POST['adresse'], PDO::PARAM_STR);
+	$resultat -> bindParam(':categorie', $_POST['categorie'], PDO::PARAM_STR);
+	
+	$nom_photo =  utf8_encode($nom_photo);
+	
+	//INT
+	$resultat -> bindParam(':cp', $_POST['codepostal'], PDO::PARAM_INT);
+	$resultat -> bindParam(':capacite', $_POST['capacite'], PDO::PARAM_INT);
+		
+
 	}
-	else{
+	elseif(isset($_GET['action']) && $_GET['action'] == 'ajout'){
 		$resultat = $pdo -> prepare("INSERT INTO salle (titre, description,photo, pays, ville, adresse, cp, capacite, categorie) VALUES (:titre, :description, :photo, :pays, :ville, :adresse, :cp, :capacite, :categorie)");
 	}
 	
@@ -111,20 +126,21 @@ if($_POST){
 	$nom_photo =  utf8_encode($nom_photo);
 	
 	//INT
-	$resultat -> bindParam(':cp', $_POST['cp'], PDO::PARAM_INT);
+	$resultat -> bindParam(':cp', $_POST['codepostal'], PDO::PARAM_INT);
+	$resultat -> bindParam(':capacite', $_POST['capacite'], PDO::PARAM_INT);
 		
-	if($resultat -> execute()){
-		$_GET['action'] = 'affichage';
+	$resultat -> execute();
+		//$_GET['action'] = 'affichage';
 		$last_id = $pdo-> lastInsertId();
 		$msg .= '<div class="validation">La salle N°' . $last_id . ' a été enregistré avec succès !</div>';
-	}
+
 	
 	// Pourquoi effectuer "-> execute()" dans le if ?
 	// Après avoir effectué ma requête je souhaite lancer des traitements (affichage du message, redirection etc...). Le problème est que ces traitements se lanceront quoi qu'il arrive (même si la requête echoue).
 	// En effectuant ces traitements dans le if($resultat -> execute()) cela garantit qu'ils ne s'effectueront qu'en cas de succès de la requête. En cas d'echec rien ne se passe !
 }
 
-
+echo $msg;
 // Traitement pour afficher tous les salles : 
 if(isset($_GET['action']) && $_GET['action'] == 'affichage'){ // Si une action existe dans l'url et que cette action est 'affichage', alors je fais les traitements pour afficher les produits. 
 	// REQUETE pour récupérer tous les infos de tous les salles :
@@ -139,11 +155,11 @@ if(isset($_GET['action']) && $_GET['action'] == 'affichage'){ // Si une action e
 	$contenu .= '<th colspan="2">Actions</th>';
 	$contenu .= '</tr>';
 
-	while($sales = $resultat -> fetch(PDO::FETCH_ASSOC)){
+	while($salles = $resultat -> fetch(PDO::FETCH_ASSOC)){
 		$contenu .= '<tr>'; 
 		foreach($salles as $indice => $valeur){
 			if($indice == 'photo'){
-				$contenu .= '<td><img src="' . RACINE_SITE . 'photo/' . $valeur . '" height="80"/></td>';
+				$contenu .= '<td><img src="' . RACINE_SITE . 'img/' . $valeur . '" height="80"/></td>';
 			}
 			else{
 				$contenu .= '<td>' . $valeur . '</td>';
@@ -151,7 +167,6 @@ if(isset($_GET['action']) && $_GET['action'] == 'affichage'){ // Si une action e
 		}
 		$contenu .= '<td><a href="?action=modification&id=' . $salles['id_salle'] . '"><img src="' . RACINE_SITE . 'img/edit.png"/></a></td>';
 		$contenu .= '<td><a href="?action=suppression&id=' . $salles['id_salle'] . '"><img src="' . RACINE_SITE . 'img/delete.png"/></a></td>';
-		
 		$contenu .= '</tr>'; 
 	}
 	$contenu .= '</table>'; 
@@ -182,7 +197,7 @@ if(isset($_GET['id']) && is_numeric($_GET['id'])){ // Si j'ai un ID dans l'URL, 
 	}
 }// fin du if !!!! 
 
-$titre = (isset($salle_actuel)) ? $salle_actuel['titr'] : '';
+$titre = (isset($salle_actuel)) ? $salle_actuel['titre'] : '';
 $description = (isset($salle_actuel)) ? $salle_actuel['description'] : '';
 $photo = (isset($salle_actuel)) ? $salle_actuel['photo'] : '';
 $pays = (isset($salle_actuel)) ? $salle_actuel['pays'] : '';
@@ -190,7 +205,7 @@ $ville = (isset($salle_actuel)) ? $salle_actuel['ville'] : '';
 $adresse = (isset($salle_actuel)) ? $salle_actuel['adresse'] : '';
 $cp = (isset($salle_actuel)) ? $salle_actuel['cp'] : '';
 $capacite = (isset($salle_actuel)) ? $salle_actuel['capacite'] : '';
-$categorie = (isset($salle_actuel)) ? $salle_actuel['categorie'] : '';
+$categorie = (isset($salle_actuel)) ?  $salle_actuel['categorie'] : '';
 
 $id_salle = (isset($salle_actuel)) ? $salle_actuel['id_salle'] : '';
 $action = (isset($salle_actuel)) ? 'Modifier' : 'Ajouter';
@@ -199,47 +214,47 @@ $action = (isset($salle_actuel)) ? 'Modifier' : 'Ajouter';
 ?>
 <h3><?= $action ?> une salle</h3>
 
-	<form style="background: white; padding: 40px; margin: 40px; " action="" method="post">
-		
+	<form style="background: white; padding: 40px; margin: 40px; " action="" method="post" enctype="multipart/form-data">
+		<input type="hidden" name="id_salle" value="<?= $id_salle?>">
 		<label>Titre : </label><br/>
-		<input type="text" name="titre " placeholder="Titre de la salle"value="<?php if(isset($_POST['titre '])){echo $_POST['titre '];} ?>"/><br/><br/>
+		<input type="text" name="titre" placeholder="Titre de la salle"value="<?= $titre ?>"/><br/><br/>
 		
 		<label>Description :</label><br/>
-		<textarea name="description" placeholder="Description de la salle"><?php if(isset($_POST['description'])){echo $_POST['description'];} ?></textarea><br/><br/>
+		<textarea name="description" placeholder="Description de la salle"><?= $description?></textarea><br/><br/>
 		
 		<label>Photo  : </label><br/>
-		<input type="file" name="photo " value="<?php if(isset($_POST['photo '])){echo $_POST['photo '];} ?>"/><br/><br/>
+		<input type="file" name="photo" /><br/><br/>
 
 		<label>Capacité : </label>
-		<select name="capacite">
+		<select name="capacite" value="<?= $capacite?>" >
 			<option value="30">30</option>
 			<option value="5">5</option>
 			<option value="2" >2</option>
 		</select><br/><br/>
 
 		<label>Catégorie : </label>
-		<select name="Categorie">
+		<select name="categorie" value="<?= $categorie?>">
 			<option value="reunion">Réunion</option>
 			<option value="bureau">Bureau</option>
 			<option value="formation" >Formation</option>
 		</select><br/><br/>
 
 		<label>Pays : </label><br/>
-		<select id="pays" name="pays" >
-			<option value="fr">France</option>
+		<select id="pays" name="pays" value="<?= $pays?>" >
+			<option value="France">France</option>
 			<option value="it">Italie</option>
 			<option value="es" >Espagne</option>		
 		</select><br /><br />
 		
 		<label>Ville : </label><br/>
-		<input type="text" name="ville" value="<?php if(isset($_POST['ville'])){echo $_POST['ville'];} ?>" /><br/><br/>
+		<input type="text" name="ville" value="<?= $ville?>"><br/><br/>
 		
 		
 		<label>Adresse : </label><br/>
-		<textarea name="adresse"><?php if(isset($_POST['adresse'])){echo $_POST['adresse'];} ?></textarea><br/><br/>
+		<textarea name="adresse"><?= $adresse?></textarea><br/><br/>
 
 		<label>Code Postal : </label><br/>
-		<input type="text" name="codepostal" value="<?php if(isset($_POST['codepostal'])){echo $_POST['codepostal'];} ?>"/><br/><br/>
+		<input type="text" name="codepostal" value="<?= $adresse?>"/><br/><br/>
 		<input type="submit" value="Enregistrer"/>
 	</form>
 <?php endif; ?> 
