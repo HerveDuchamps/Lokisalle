@@ -135,7 +135,7 @@ if($_POST){
 // Traitement pour afficher tous les produits : 
 if(isset($_GET['action']) && $_GET['action'] == 'affichage'){ // Si une action existe dans l'url et que cette action est 'affichage', alors je fais les traitements pour afficher les produits. 
 	// REQUETE pour récupérer tous les infos de tous les produits :
-	$resultat = $pdo -> query("SELECT * FROM produit");
+	$resultat = $pdo -> query("SELECT * FROM salle");
 	
 	$contenu .= '<table border="1">';
 	$contenu .= '<tr>';
@@ -164,14 +164,14 @@ if(isset($_GET['action']) && $_GET['action'] == 'affichage'){ // Si une action e
 	$contenu .= '</table>'; 
 }
 
-$page='Gestion Boutique';
+$page='Gestion_des_salles';
 require_once('../inc/header.inc.php');
 ?>
 <!-- Contenu HTML -->
-<h1>Gestion de la boutique</h1>
+<h1>Gestion des salles</h1>
 <ul>
-	<li><a href="?action=affichage">Afficher les produits</a></li>
-	<li><a href="?action=ajout">Ajouter un produit</a></li>
+	<li><a href="?action=affichage">Afficher les salles</a></li>
+	<li><a href="?action=ajout">Ajouter une salle</a></li>
 </ul><hr/>
 <?= $msg ?>
 <?= $contenu ?>
@@ -205,7 +205,7 @@ $action = (isset($produit_actuel)) ? 'Modifier' : 'Ajouter';
 
 
 ?>
-<h3><?= $action ?> un produit</h3>
+<h3><?= $action ?> une salle</h3>
 
 	<form style="background: white; padding: 40px; margin: 40px; " action="" method="post">
 		
