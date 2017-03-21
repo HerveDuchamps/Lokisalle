@@ -1,0 +1,35 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+.form{
+    width: 400px;
+    margin: 20px auto;
+    color: #000;
+
+}
+input{
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+select{
+    width: 100%;
+    margin-bottom: 10px; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
