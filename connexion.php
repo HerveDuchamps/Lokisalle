@@ -57,6 +57,7 @@ require_once('inc/header.inc.php');
 <!-- Contenu HTML -->
 <h1>Connexion</h1>
 <?= $msg ?>
+<p>test</p>
 <form action="" method="post">
 	<label>Pseudo :</label><br/>
 	<input type="text" name="pseudo"/><br/><br/>
