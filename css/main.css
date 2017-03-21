@@ -1,16 +1,11 @@
 
-
-/* ==========================================================================
-   Author's custom styles
-   ========================================================================== */
-
 .form{
     width: 400px;
     margin: 20px auto;
     color: #000;
 
 }
-input{
+label, input{
     display: block;
     width: 100%;
     margin-bottom: 10px;
@@ -19,17 +14,22 @@ select{
     width: 100%;
     margin-bottom: 10px; 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.validation{
+    background: green;
+    color: #fff;
+}
+table{
+	border-collapse: collapse;
+	margin: 0 auto;
+	width: 700px;
+	height: 100px;
+}
+th{
+	background: #f40c80;
+	color: #fff;
+}
+td, th{
+	padding: 7px;
+	text-align: left;
+	border: 1px solid #000;
+}
