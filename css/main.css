@@ -33,3 +33,7 @@ td, th{
 	text-align: left;
 	border: 1px solid #000;
 }
+.error{
+    background: red;
+    color: #fff;
+}
