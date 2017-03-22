@@ -1,14 +1,14 @@
-Methode Git & Github
+-------------Methode Git & Github------------------------
 
-1- Créer un dossier vide 
+1- Créer un dossier vide
 2- Placer votre dossier dans Visual studio code
 3- Dans le terminal :
 	- Initialiser GIT => GIT INIT
-	- Mettre en place le lien entre votre dossier local et github => git remote add origin https://github.com/HerveDuchamps/lokisalle.git
+	- Mettre en place le lien entre votre dossier local et github => git remote add origin https://github.com...
 	- Importer les fichers du repository vers votre dossier local => git pull origin master
 4- Pour recuperer des fichiers de GitHub
 	- git pull origin master
 5- Pour envoyer vos fichiers vers GitHub :
-	- git add master
+	- git add master (ou git add --all)
 	- git commit -a -m "information liée au commit"
-	- git push origin master
+	- git push origin master (ou nom de la branche)
