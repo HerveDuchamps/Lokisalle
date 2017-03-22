@@ -4,6 +4,42 @@ require_once('../inc/init.inc.php');
 //récupérer les informations depuis la table salle
 $liste_salle = $pdo-> query("SELECT * FROM salle");
 
+
+
+//Traitement pour supprimer un produit
+if(isset($_GET['action']) && $_GET['action']== 'suppression'){
+    if(isset($_GET['id_produit']) && is_numeric($_GET['id_produit'])){
+        $resultat = $pdo -> prepare("DELETE FROM produit WHERE id_produit = :id_produit");
+        $resultat -> bindParam(':id_produit', $_GET['id_produit'], PDO::PARAM_INT); 
+        $resultat -> execute();
+        $produit = $resultat ->fetch(PDO::FETCH_ASSOC);
+        echo '<div class="validation">le produit N° '. $produit['id_produit'] .' a été bien supprimer</div>';
+    }
+}
+
+
+
+//Enregistrer les produits dans la BDD:
+if($_POST){
+    if(isset($_GET['action']) && $_GET['action'] == 'modification'){
+        $info = $pdo -> prepare("UPDATE produit SET  date_arrivee=:date_arrivee, date_depart=:date_depart, prix=:prix WHERE id_produit=:id_produit");
+        $info -> bindParam(':id_produit', $_POST['id_produit'], PDO::PARAM_INT); 
+        $info -> bindParam(':date_arrivee', $_POST['date_a'], PDO::PARAM_STR); 
+        $info -> bindParam(':date_depart', $_POST['date_d'], PDO::PARAM_STR); 
+        $info -> bindParam(':prix', $_POST['tarif'], PDO::PARAM_INT); 
+        $info -> execute();
+    }
+    else{
+    extract($_POST);
+    $info = $pdo -> query("INSERT INTO produit (id_salle, date_arrivee, date_depart, prix) VALUES ('$id_salle', '$date_a', '$date_d', '$tarif')");
+
+    echo '<div class="validation">le produit a bien été enregistrer dans la BDD</div>';
+
+}
+   echo $msg;
+}
+
+
 //Affichage des produits dans une table:
 
 
@@ -41,29 +77,30 @@ $contenu .= '<table border="1">';
 	$contenu .= '</table>'; 
 
 
-//Enregistrer les produits dans la BDD:
-if($_POST){
-    if(isset($_GET['action']) && $_GET['action'] == 'modification'){
-        $info = $pdo -> prepare("UPDATE produit SET  date_arrivee=:date_arrivee, date_depart=:date_depart, prix=:prix WHERE id_salle=:id_salle ");
-        $info -> bindParam(':id_salle', $_POST['id_salle'], PDO::PARAM_INT); 
-        $info -> bindParam(':date_arrive', $_POST['date_a'], PDO::PARAM_STR); 
-        $info -> bindParam(':date_depart', $_POST['date_d'], PDO::PARAM_STR); 
-        $info -> bindParam(':prix', $_POST['prix'], PDO::PARAM_STR); 
-        $info -> execute();
+
+//garder les infos lors de la modif
+
+    if(isset($_GET['id_produit']) && is_numeric($_GET['id_produit'])){
+        $resultat = $pdo ->prepare('SELECT * FROM produit');
+        $resultat -> bindParam(':id_produit', $_GET['id_produit'], PDO::PARAM_INT);
+        $resultat -> execute();
+        if($resultat -> rowCount() > 0){
+            $produit_actuel = $resultat->fetch(PDO::FETCH_ASSOC);
+        }
+
     }
-    else{
-    extract($_POST);
-    $info = $pdo -> query("INSERT INTO produit (id_salle, date_arrivee, date_depart, prix) VALUES ('$id_salle', '$date_a', '$date_d', '$tarif')");
 
-    echo '<div class="validation">le produit a bien été enregistrer dans la BDD</div>';
+   
+$date_arrivee = (isset($produit_actuel)) ? $produit_actuel['date_arrivee'] : '';
+$date_depart = (isset($produit_actuel))? $produit_actuel['date_depart'] : '';
+$tarif = (isset($produit_actuel)) ? $produit_actuel['prix'] : '';
 
-}}
-
-
-
+$id_produit = (isset($produit_actuel))? $produit_actuel['id_produit'] : '';
+$action = (isset($produit_actuel))? 'Modifier' :  'Ajouter';
 
 
-$page ="Gestion boutique";
+
+$page ="Gestion Produit";
 require_once('../inc/header.inc.php');
 ?>
 <!--Contenu HTML-->
@@ -71,11 +108,12 @@ require_once('../inc/header.inc.php');
 <?= $contenu?>
 <div class="form">
     <form method="post" action="" enctype="multipart/form-data">
+        <input type="hidden" name="id_produit" value="<?= $id_produit?>">
         <label>Date d'arrivée</label>
-        <input type="text" name="date_a"/>
+        <input type="text" name="date_a" value="<?= $date_arrivee?>"/>
 
         <label>date de départ </label>
-        <input type="text" name="date_d"/>
+        <input type="text" name="date_d" value="<?= $date_depart?>"/>
 
         <label>Salle</label>
         <select name="id_salle"/>
@@ -87,24 +125,13 @@ require_once('../inc/header.inc.php');
         </select>
 
         <label>Tarif</label>
-        <input type="text" name="tarif"/>
+        <input type="text" name="tarif" value="<?= $tarif?>"/>
 
         <input type="submit" value="Enregister"/>
 
 
     </form>
 </div>
-
-
-
-
-
-
-
-
-
-
-
 
 
 <?php
