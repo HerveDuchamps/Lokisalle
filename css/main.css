@@ -33,11 +33,7 @@ td, th{
 	text-align: left;
 	border: 1px solid #000;
 }
-.sidebar{
-    height: 800px;
-    background: #65B6EB;
-}
-.mainbar{
-    height: 800px;
-    background: #66BC66;
+.error{
+    background: red;
+    color: #fff;
 }
