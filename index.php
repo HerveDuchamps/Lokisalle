@@ -1,6 +1,5 @@
 <?php
 require_once('inc/init.inc.php');
-require_once('inc/header.inc.php');
 ?>
 
 <?php
@@ -45,7 +44,7 @@ $condition = '';
     $prix = max($prix);
     debug($prix);
 $page = 'Boutique';
-require('inc/header.inc.php');
+require_once('inc/header.inc.php');
 ?>
     <div class="container">
       <!-- Example row of columns -->
@@ -76,6 +75,44 @@ require('inc/header.inc.php');
             <input type="range" name="prix" min="0" max="<?=$prix['prix']?>">
             <p>Prix maximum : <?=$prix['prix']?> €</p>
             <label>Période</label><BR>
+
+<div class="container">
+    <div class='col-md-5'>
+        <div class="form-group">
+            <div class='input-group date' id='datetimepicker6'>
+                <input type='text' class="form-control" />
+                <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class='col-md-5'>
+        <div class="form-group">
+            <div class='input-group date' id='datetimepicker7'>
+                <input type='text' class="form-control" />
+                <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('#datetimepicker6').datetimepicker();
+        $('#datetimepicker7').datetimepicker({
+            useCurrent: false //Important! See issue #1075
+        });
+        $("#datetimepicker6").on("dp.change", function (e) {
+            $('#datetimepicker7').data("DateTimePicker").minDate(e.date);
+        });
+        $("#datetimepicker7").on("dp.change", function (e) {
+            $('#datetimepicker6').data("DateTimePicker").maxDate(e.date);
+        });
+    });
+</script>
+
             <input type="date" name="date_arrivee">
             <input type="date" name="date_depart">
             <input type="submit" class="btn btn-primary" value"recherche">
@@ -96,7 +133,7 @@ require('inc/header.inc.php');
           foreach($produits as $valeur) : ?> 
           <!-- début vignette produit -->
           <div class="col-md-4">
-            <a href="fiche_produit.php?id=<?= $valeur['id_produit'] ?>"><img src="<?= $valeur['photo'] ?>" width="200 px"/></a>
+            <a href="fiche_produit.php?id=<?= $valeur['id_produit'] ?>"><img src="<?= RACINE_SITE . '/img/' . $valeur['photo'] ?>" width="200 px"/></a>
             <h3><?= $valeur['titre'] ?></h3>
             <p style="font-weight: bold; font-size: 20px; "><?= $valeur['prix'] ?> €</p>
             <p style="font-size: 20px; "><?= $valeur['description'] ?></p>
