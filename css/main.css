@@ -37,3 +37,24 @@ td, th{
     background: red;
     color: #fff;
 }
+label{
+    font-weight: bold ! important;
+    padding-left: 0 !important;
+}
+.titre-photo{
+    color: blue;
+    font-size: 20px;
+}
+.photos{
+    height: 130px;
+    margin-top: 10px;
+}
+.date{
+    display: inline-block;
+}
+.produits_salles{
+    border: 1px solid grey;
+}
+.premiere_ligne_photo{
+    padding-top: 20px;
+}
