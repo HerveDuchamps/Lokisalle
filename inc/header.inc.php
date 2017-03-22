@@ -21,6 +21,7 @@
         <link rel="stylesheet" href="<?= RACINE_SITE?>css/main.css">
 
         <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+        <script src="js/main.js"></script>
     </head>
     <body>
         <!--[if lt IE 8]>

@@ -1,6 +1,6 @@
 <?php
 require_once('inc/init.inc.php');
-require_once('inc/header.inc.php');
+
 ?>
 
 <?php
@@ -27,8 +27,7 @@ $condition = '';
     $condition
     ");
 		$produits = $resultat -> fetchAll(PDO::FETCH_ASSOC);
-    debug($produits);
-    debug($_POST);
+   
 
 // Récupération des valeurs de filtres
     $resultat = $pdo -> query("SELECT categorie FROM salle GROUP BY categorie");
@@ -43,7 +42,7 @@ $condition = '';
     $resultat = $pdo -> query("SELECT prix FROM produit GROUP BY prix");
 		$prix = $resultat -> fetchAll(PDO::FETCH_ASSOC);
     $prix = max($prix);
-    debug($prix);
+  
 $page = 'Boutique';
 require('inc/header.inc.php');
 ?>
@@ -96,7 +95,7 @@ require('inc/header.inc.php');
           foreach($produits as $valeur) : ?> 
           <!-- début vignette produit -->
           <div class="col-md-4">
-            <a href="fiche_produit.php?id=<?= $valeur['id_produit'] ?>"><img src="<?= $valeur['photo'] ?>" width="200 px"/></a>
+            <a href="fiche_produit.php?id=<?= $valeur['id_produit'] ?>"><img src="<?=  RACINE_SITE . 'img/' . $valeur['photo']  ?>" width="200 px"/></a>
             <h3><?= $valeur['titre'] ?></h3>
             <p style="font-weight: bold; font-size: 20px; "><?= $valeur['prix'] ?> €</p>
             <p style="font-size: 20px; "><?= $valeur['description'] ?></p>
